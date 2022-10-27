@@ -1,0 +1,8 @@
+/* 모든 h4태그의 font-family는 "nanumsquare"로 설정해달라 */
+h4 {
+  font-family: "nanumsquare";
+}
+/* 모든 body의 font-famailt는 "nanumsquare"로 설정해달라 */
+body {
+  font-family: "nanumsquare";
+}

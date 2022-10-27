@@ -19,6 +19,12 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.urlencoded({ extended: true }))
 
+MongoClient.connect("mongodb+srv://tjddn7503:tjddn7503@cluster0.tu1uk.mongodb.net/?retryWrites=true&w=majority", (error, client) => {
+  app.listen(8080, () => {
+    console.log("listening on 8080")
+  })
+
+})
 
 
 
@@ -71,6 +77,8 @@ function isLogin(req, res, next) {
 }
 
 
-app.listen(8080, () => {
-  console.log("listending on 8080")
+
+
+app.get("/", (req, res, next) => {
+  res.render("test.ejs")
 })
