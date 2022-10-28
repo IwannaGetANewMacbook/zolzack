@@ -19,13 +19,18 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.urlencoded({ extended: true }))
 
-MongoClient.connect("mongodb+srv://tjddn7503:tjddn7503@cluster0.tu1uk.mongodb.net/?retryWrites=true&w=majority", (error, client) => {
-  app.listen(8080, () => {
+// DB접속이 완료되면 8080포트로 서버 연결시키삼!
+MongoClient.connect(process.env.DB_URL, (e, client) => {
+  // 예외 처리
+  if(e) {
+    return console.log(e)
+  }
+  db = client.db("zolzack") //todoapp 이라는 database(폴더)에 연결좀요
+
+  app.listen(process.env.PORT, () => {
     console.log("listening on 8080")
   })
-
 })
-
 
 
 
@@ -80,5 +85,47 @@ function isLogin(req, res, next) {
 
 
 app.get("/", (req, res, next) => {
-  res.render("test.ejs")
+  db.collection("post").find().toArray((error, result) => {
+    res.render("home.ejs", { posts: result })
+  })
+})
+
+
+app.get("/write", (req, res, next) => {
+  res.render("write.ejs")
+})
+
+
+app.get("/history", (req, res, next) => {
+  res.render("history.ejs")
+})
+
+
+app.get("/HallOfFame", (req, res, next) => {
+  res.render("halloffame.ejs")
+})
+
+
+app.get("/mypage", (req, res, next) => {
+  res.render("mypage.ejs")
+})
+
+
+app.post("/add", (req, res, next) => {
+    let date = new Date()
+    let realTime = `${ date.getMonth() + 1 }월 ${ date.getDate() }일 ${ date.getHours() }시 ${ date.getMinutes() }분`
+    db.collection("post").insertOne({ 
+      world: [req.body.world1, req.body.world2, req.body.world3], 
+      meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
+      date: realTime
+    }, 
+      (error, result) => {
+      if(error) {
+        console.log(error)
+      } else {
+        console.log("저장 완료!")
+      }
+    })
+    
+  res.redirect("/")
 })
