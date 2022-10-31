@@ -106,8 +106,15 @@ app.get("/HallOfFame", (req, res, next) => {
 })
 
 
-app.get("/mypage", (req, res, next) => {
-  res.render("mypage.ejs")
+// 마이페이지 만들기.
+app.get("/mypage", isLogin, (req, res, next) => {     // 마이파이지 접속 시 isLogin 함수(미들웨어)가 실행되고 실행이 성공적일 경우 res.render()실행시킴.
+  // console.log(req.user)
+  res.render("mypage.ejs", { userInfo: req.user })    // 여기서 req.user는 deserializeUser가 보내준 로그인한 유저의 데이터.
+})
+
+
+app.get("/login", (req, res, next) => {
+  res.render("login.ejs")
 })
 
 
@@ -128,4 +135,53 @@ app.post("/add", (req, res, next) => {
     })
     
   res.redirect("/")
+})
+
+// login 페이지의 post요청.
+app.post("/login", passport.authenticate("local", {
+  failureRedirect: "/fail"  // local 방식으로 회원인지 인증해주세요~ 그리고 로그인에 실해하면 /fail 경로로 이동시켜 주세요~
+}), (req, res, next) => {
+  res.redirect("/") // 로그인 성공 시 루트경로로 이동시켜주세요~
+})
+
+// 로그인 실패시 redirect 되는 /fail 경로 만들기
+app.get("/fail", (req, res, next) => {
+  console.log("401-Unauthorized")
+  res.status(401).send("401-Unauthorized")
+})
+
+
+// /signup 경로로 post요청
+app.post("/signup", (req, res, next) => {
+  db.collection("login").findOne({ $or: [{id: req.body.id}, {username: req.body.username}] }, (error, result) => {
+    console.log(result)
+    if(!result) {
+      db.collection("login").insertOne({
+        id: req.body.id,
+        pw: req.body.pw,
+        username: req.body.username
+      })
+      res.send("<script>alert('회원가입이 완료되었습니다!\\n로그인 해주십시오.');location.href='/login';</script>");
+    } else if (result.id === req.body.id) {      
+      res.send("<script>alert('중복된 아이디 입니다.\\n다른 아이디를 입력해주세요.');location.href='/login';</script>");
+    } else if (result.username === req.body.username) {      
+      res.send("<script>alert('중복된 닉네임 입니다.\\n다른 닉네임을 입력해주세요.');location.href='/login';</script>");
+    }
+})
+})
+
+
+// /logout 기능 라우팅
+app.post("/logout", isLogin, (req, res, next) => {
+  req.session.user = null
+  req.session.save(function (err) {
+    if (err) next(err)
+
+    // regenerate the session, which is good practice to help
+    // guard against forms of session fixation
+    req.session.regenerate(function (err) {
+      if (err) next(err)
+      res.send("<script>alert('로그아웃이 완료되었습니다.');location.href='/login';</script>");
+    })
+  })
 })
