@@ -29,7 +29,7 @@
           <p></p>
           <h4>오늘의 단어3: <%= posts[i].world[2] %></h4>
           <p></p>
-          <p><%= posts[i].date %></p>
+          <p><%= posts[i].dateToString %></p>
           <!-- <p>User Name: <%= posts[i].date %></p> -->
           <button class="btn btn-outline-danger delete" data-id="<%= posts[i]._id %>">Delete</button>
           <button class="btn btn-outline-success" data-id="<%= posts[i]._id %>" onclick="location.href='/edit/<%= posts[i]._id %>'">Modify</button>

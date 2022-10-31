@@ -87,8 +87,10 @@ function isLogin(req, res, next) {
 app.get("/", isLogin, (req, res, next) => {
   let date = new Date()
   let day = date.getDate()
-  db.collection("post").find({ day: day }).sort({ day: -1, _id: -1}).toArray((error, result) => {
+  let month = date.getMonth() + 1
+  db.collection("post").find({ day: day, month: month }).sort({ date: -1 }).toArray((error, result) => {
     res.render("home.ejs", { posts: result, user: req.user })
+    req
   })
 })
 
@@ -101,7 +103,8 @@ app.get("/write", isLogin, (req, res, next) => {
 app.get("/history", isLogin, (req, res, next) => {
   let date = new Date()
   let day = date.getDate()
-  db.collection("post").find( { day: {$lt: day} } ).sort({ day: -1, _id: -1}).toArray((error, result) => {
+  let month = date.getMonth() + 1
+  db.collection("post").find({ day: {$ne: day}, month: {$ne: month} }).sort({ date: -1 }).toArray((error, result) => {
     res.render("history.ejs", { posts: result, user: req.user })
   })
 })
@@ -128,12 +131,14 @@ app.post("/add", (req, res, next) => {
     let date = new Date()
     let realTime = `${ date.getMonth() + 1 }월 ${ date.getDate() }일 ${ date.getHours() }시 ${ date.getMinutes() }분`
     let day = date.getDate()
+    let month = date.getMonth() + 1
     db.collection("post").insertOne({ 
       world: [req.body.world1, req.body.world2, req.body.world3], 
       meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
-      date: realTime,
+      dateToString: realTime,
+      date: new Date(),
+      month: month,
       day: day
-      
     }, 
       (error, result) => {
       if(error) {
