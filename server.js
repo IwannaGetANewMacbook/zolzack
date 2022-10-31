@@ -84,24 +84,30 @@ function isLogin(req, res, next) {
 
 
 
-app.get("/", (req, res, next) => {
-  db.collection("post").find().toArray((error, result) => {
-    res.render("home.ejs", { posts: result })
+app.get("/", isLogin, (req, res, next) => {
+  let date = new Date()
+  let day = date.getDate()
+  db.collection("post").find({ day: day }).sort({ day: -1, _id: -1}).toArray((error, result) => {
+    res.render("home.ejs", { posts: result, user: req.user })
   })
 })
 
 
-app.get("/write", (req, res, next) => {
+app.get("/write", isLogin, (req, res, next) => {
   res.render("write.ejs")
 })
 
 
-app.get("/history", (req, res, next) => {
-  res.render("history.ejs")
+app.get("/history", isLogin, (req, res, next) => {
+  let date = new Date()
+  let day = date.getDate()
+  db.collection("post").find( { day: {$lt: day} } ).sort({ day: -1, _id: -1}).toArray((error, result) => {
+    res.render("history.ejs", { posts: result, user: req.user })
+  })
 })
 
 
-app.get("/HallOfFame", (req, res, next) => {
+app.get("/HallOfFame", isLogin, (req, res, next) => {
   res.render("halloffame.ejs")
 })
 
@@ -121,10 +127,13 @@ app.get("/login", (req, res, next) => {
 app.post("/add", (req, res, next) => {
     let date = new Date()
     let realTime = `${ date.getMonth() + 1 }월 ${ date.getDate() }일 ${ date.getHours() }시 ${ date.getMinutes() }분`
+    let day = date.getDate()
     db.collection("post").insertOne({ 
       world: [req.body.world1, req.body.world2, req.body.world3], 
       meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
-      date: realTime
+      date: realTime,
+      day: day
+      
     }, 
       (error, result) => {
       if(error) {
@@ -136,6 +145,7 @@ app.post("/add", (req, res, next) => {
     
   res.redirect("/")
 })
+
 
 // login 페이지의 post요청.
 app.post("/login", passport.authenticate("local", {
