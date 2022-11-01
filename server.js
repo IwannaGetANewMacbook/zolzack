@@ -19,6 +19,10 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.urlencoded({ extended: true }))
 
+// mongodb 한국시간 설정하는 변수
+const KR_TIME_DIFF = 9 * 60 * 60 * 1000
+
+
 // DB접속이 완료되면 8080포트로 서버 연결시키삼!
 MongoClient.connect(process.env.DB_URL, (e, client) => {
   // 예외 처리
@@ -85,12 +89,9 @@ function isLogin(req, res, next) {
 
 
 app.get("/", isLogin, (req, res, next) => {
-  let date = new Date()
-  let day = date.getDate()
-  let month = date.getMonth() + 1
-  db.collection("post").find({ day: day, month: month }).sort({ date: -1 }).toArray((error, result) => {
+  let yesterday = new Date(new Date().setHours(0, 0, 0, 0)) + KR_TIME_DIFF // 이전 자정
+  db.collection("post").find({ date: { $gt: yesterday }}).sort({ date: -1 }).toArray((error, result) => {
     res.render("home.ejs", { posts: result, user: req.user })
-    req
   })
 })
 
@@ -101,10 +102,8 @@ app.get("/write", isLogin, (req, res, next) => {
 
 
 app.get("/history", isLogin, (req, res, next) => {
-  let date = new Date()
-  let day = date.getDate()
-  let month = date.getMonth() + 1
-  db.collection("post").find({ day: {$ne: day}, month: {$ne: month} }).sort({ date: -1 }).toArray((error, result) => {
+  let yesterday = new Date(new Date().setHours(0, 0, 0, 0)) + KR_TIME_DIFF // 이전 자정
+  db.collection("post").find({ date: {$lt: yesterday} }).sort({ date: -1 }).toArray((error, result) => {
     res.render("history.ejs", { posts: result, user: req.user })
   })
 })
@@ -128,26 +127,22 @@ app.get("/login", (req, res, next) => {
 
 
 app.post("/add", (req, res, next) => {
-    let date = new Date()
-    let realTime = `${ date.getMonth() + 1 }월 ${ date.getDate() }일 ${ date.getHours() }시 ${ date.getMinutes() }분`
-    let day = date.getDate()
-    let month = date.getMonth() + 1
-    db.collection("post").insertOne({ 
-      world: [req.body.world1, req.body.world2, req.body.world3], 
-      meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
-      dateToString: realTime,
-      date: new Date(),
-      month: month,
-      day: day
-    }, 
-      (error, result) => {
-      if(error) {
-        console.log(error)
-      } else {
-        console.log("저장 완료!")
-      }
-    })
-    
+  let date = new Date()
+  let dateToString = `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`
+  db.collection("post").insertOne({ 
+    world: [req.body.world1, req.body.world2, req.body.world3], 
+    meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
+    date: new Date() + KR_TIME_DIFF,
+    dateToString: dateToString
+  }, 
+    (error, result) => {
+    if(error) {
+      console.log(error)
+    } else {
+      console.log("저장 완료!")
+    }
+  })
+  
   res.redirect("/")
 })
 
