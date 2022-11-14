@@ -6,6 +6,10 @@ const passport = require("passport")
 const localStrategy = require("passport-local").Strategy
 const session = require("express-session")
 require("dotenv").config()
+const bson = require("bson")
+// const { Temporal, Intl, toTemporalInstant } = require('@js-temporal/polyfill');
+// Date.prototype.toTemporalInstant = toTemporalInstant;
+// console.log(Temporal.Now.zonedDateTimeISO('Asia/Seoul').toString())
 
 // ejs 라이브러리및 미들웨어 등록.
 app.set("view engine", "ejs")
@@ -19,9 +23,31 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.urlencoded({ extended: true }))
 
-// mongodb 한국시간 설정하는 변수
-const KR_TIME_DIFF = 9 * 60 * 60 * 1000
 
+function getCurrentDate(){
+  var date = new Date();
+  var year = date.getFullYear();
+  var month = date.getMonth();
+  var today = date.getDate();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var seconds = date.getSeconds();
+  var milliseconds = date.getMilliseconds();
+  return new Date(Date.UTC(year, month, today, hours, minutes, seconds, milliseconds));
+}
+
+function getYesterdayMidnight(){
+  var date = new Date();
+  var year = date.getFullYear();
+  var month = date.getMonth();
+  var today = date.getDate();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var seconds = date.getSeconds();
+  var milliseconds = date.getMilliseconds();
+  return new Date(Date.UTC(year, month, today));
+}
+console.log(getYesterdayMidnight())
 
 // DB접속이 완료되면 8080포트로 서버 연결시키삼!
 MongoClient.connect(process.env.DB_URL, (e, client) => {
@@ -89,9 +115,8 @@ function isLogin(req, res, next) {
 
 
 app.get("/", isLogin, (req, res, next) => {
-  let yesterday = new Date(new Date().setHours(0, 0, 0, 0)) + KR_TIME_DIFF // 이전 자정
-  db.collection("post").find({ date: { $gt: yesterday }}).sort({ date: -1 }).toArray((error, result) => {
-    res.render("home.ejs", { posts: result, user: req.user })
+  db.collection("post").find({ date: { $gte: getYesterdayMidnight() }}).sort({ date: -1 }).toArray((error, result) => {
+    res.render("home.ejs", { posts: result })
   })
 })
 
@@ -102,9 +127,8 @@ app.get("/write", isLogin, (req, res, next) => {
 
 
 app.get("/history", isLogin, (req, res, next) => {
-  let yesterday = new Date(new Date().setHours(0, 0, 0, 0)) + KR_TIME_DIFF // 이전 자정
-  db.collection("post").find({ date: {$lt: yesterday} }).sort({ date: -1 }).toArray((error, result) => {
-    res.render("history.ejs", { posts: result, user: req.user })
+  db.collection("post").find({ date: {$lt: getYesterdayMidnight()} }).sort({ date: -1 }).toArray((error, result) => {
+    res.render("history.ejs", { posts: result })
   })
 })
 
@@ -132,8 +156,9 @@ app.post("/add", (req, res, next) => {
   db.collection("post").insertOne({ 
     world: [req.body.world1, req.body.world2, req.body.world3], 
     meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
-    date: new Date() + KR_TIME_DIFF,
-    dateToString: dateToString
+    date: getCurrentDate(),
+    dateToString: dateToString,
+    username: req.user.username
   }, 
     (error, result) => {
     if(error) {
@@ -196,4 +221,18 @@ app.post("/logout", isLogin, (req, res, next) => {
   })
 })
 
-//...
+app.delete("/delete", (req, res, next) => {
+  console.log(req.body._id)
+  // req.body._id = parseInt(req.body._id)  // "string" 자료형을 정수자료형으로 변환.
+  // 이걸 deleteOne()에 넣으면 _id가 일치하는것과 username이 일치하는 것 둘 다 만족하는 게시물을 찾아서 지워줌.
+  let dataToDelete = { _id: bson.ObjectId(req.body._id), username: req.user.username }  
+  // req.body에 담겨온 게시물번호와 req.user.username이 일치하는 게시글을 db에서 찾아서 삭제해 주삼!
+  db.collection("post").deleteOne(dataToDelete, (error, result) => {
+    if(error) {
+      console.log(error)
+    } else {
+      console.log("delete completed")
+      res.status(200).send({ message: "completed!" })
+    }
+  })
+})
