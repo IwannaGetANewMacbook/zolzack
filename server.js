@@ -23,7 +23,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.urlencoded({ extended: true }))
 
-
+// 현재 시간정보를 리턴해주는 함수
 function getCurrentDate(){
   var date = new Date();
   var year = date.getFullYear();
@@ -36,6 +36,8 @@ function getCurrentDate(){
   return new Date(Date.UTC(year, month, today, hours, minutes, seconds, milliseconds));
 }
 
+
+// 오늘 자정을 리턴해주는 함수
 function getYesterdayMidnight(){
   var date = new Date();
   var year = date.getFullYear();
@@ -47,7 +49,6 @@ function getYesterdayMidnight(){
   var milliseconds = date.getMilliseconds();
   return new Date(Date.UTC(year, month, today));
 }
-console.log(getYesterdayMidnight())
 
 // DB접속이 완료되면 8080포트로 서버 연결시키삼!
 MongoClient.connect(process.env.DB_URL, (e, client) => {
@@ -140,8 +141,9 @@ app.get("/HallOfFame", isLogin, (req, res, next) => {
 
 // 마이페이지 만들기.
 app.get("/mypage", isLogin, (req, res, next) => {     // 마이파이지 접속 시 isLogin 함수(미들웨어)가 실행되고 실행이 성공적일 경우 res.render()실행시킴.
-  // console.log(req.user)
-  res.render("mypage.ejs", { userInfo: req.user })    // 여기서 req.user는 deserializeUser가 보내준 로그인한 유저의 데이터.
+  db.collection("post").find({ username: req.user.username }).sort({ date: -1 }).toArray((error, result) => {
+    res.render("mypage.ejs", { userInfo: req.user, posts: result })    // 여기서 req.user는 deserializeUser가 보내준 로그인한 유저의 데이터.
+  })
 })
 
 

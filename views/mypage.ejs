@@ -14,17 +14,71 @@
     <!-- nav.html을 첨부. -->
     <%- include("nav.html") %>
     <pre>
-      <h1 class="text-center">mypage</h1>
+      <h1 class="text-center">My Page</h1>
       <h6 class="text-center">정보통신공학과 김수현 졸업작품</h6>
     </pre>
+    
 
-    <p>id: <%= userInfo.id %></p>
-    <p>pw: <%= userInfo.pw %></p>
-    <p>username: <%= userInfo.username%></p>
-  
-  <form action="/logout", method="post">
-    <button type="submit" class="btn btn-outline-danger">Log out</button> 
+    <p class="text-center">id: <%= userInfo.id %> </p>
+    <!-- <p class="text-center">pw: <%= userInfo.pw %></p> -->
+    <p class="text-center">닉네임: <%= userInfo.username%></p>
+    
+    
+    <form action="/logout", method="post" class="text-center">
+      <button type="submit" class="btn btn-outline-danger" >Log out</button> 
+      <pre>
+
+        
+      </pre>
+      <h1 class="text-center">내가 작성한 글</h1>
   </form>
+    <div class="container mt-4">  
+      <ul class="list-group">
+        <% for (let i = 0; i < posts.length; i++) { %>
+        <li class="list-group-item">
+          <p>닉네임: <%= posts[i].username %></p>
+          <h4>오늘의 단어1: <%= posts[i].world[0] %></h4>
+          <h4>뜻: <%= posts[i].meaning[0] %></h4>
+          <p></p>
+          <h4>오늘의 단어2: <%= posts[i].world[1] %></h4>
+          <h4>뜻: <%= posts[i].meaning[1] %></h4>
+          <p></p>
+          <h4>오늘의 단어3: <%= posts[i].world[2] %></h4>
+          <h4>뜻: <%= posts[i].meaning[2] %></h4>
+          <p></p>
+          <p><%= posts[i].dateToString %></p>
+          
+          <button class="btn btn-outline-danger delete" data-id="<%= posts[i]._id %>">Delete</button>
+          <button class="btn btn-outline-success" data-id="<%= posts[i]._id %>" onclick="location.href='/edit/<%= posts[i]._id %>'">Modify</button>
+          <button type="button" data-id="<%= posts[i].username %>" onclick="location.href='/chatroom'" class="btn btn-outline-secondary chat">채팅하기</button>
+        </li>
+        <% } %>
+      </ul>
+    </div>
+    <!-- 삭제요청 AJAX 작성(with JQuery 문법) -->
+    <script>
+      // ajax 기본 문법
+      // delete버튼 누를때만 서버에 delete요청하는 코드.
+      $('.delete').click( function(e) {
+        var number = e.target.dataset.id      //event.tartget 은 실제로 내가 클릭한 요소 + 숨겨져있는 data-id 를 number변수에 저장하라.
+        var currently = $(this)
+
+        // 서버에 새로고침 없이 DELTE요청 할 꺼에요~
+        $.ajax({
+          method : "DELETE",
+          url: "/delete",
+          data: { _id: number}
+        }).done(function(result) {         // 요청 성공시 실행할 코드.
+          // 페이지를 강제로 새로고침 해주세요
+          // 또는, 삭제버튼을 누른 <li>요소를 제거해주세요/안보이게
+          currently.parent('li').fadeOut()    // parent(): ~의 부모태그를 찾아주셈!,  fadeOut(): 서서히 사라지게 해달라!
+          
+        }).fail((xhr, textStatus, errorThrown ) => {   // 요청 실패시 실행할 코드.
+          console.log("Something went wrong🤔")
+          console.log(xhr, textStatus, errorThrown)
+        })
+      })
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <%- include("footer.html") %>
   </body>
