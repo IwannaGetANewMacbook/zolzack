@@ -22,13 +22,13 @@
         <% for (let i = 0; i < posts.length; i++) { %>
         <li class="list-group-item">
           <p>닉네임: <%= posts[i].username %></p>
-          <h4>오늘의 단어1: <%= posts[i].world[0] %></h4>
+          <h4>단어: <%= posts[i].world[0] %></h4>
           <h4>뜻: <%= posts[i].meaning[0] %></h4>
           <p></p>
-          <h4>오늘의 단어2: <%= posts[i].world[1] %></h4>
+          <h4>단어: <%= posts[i].world[1] %></h4>
           <h4>뜻: <%= posts[i].meaning[1] %></h4>
           <p></p>
-          <h4>오늘의 단어3: <%= posts[i].world[2] %></h4>
+          <h4>단어: <%= posts[i].world[2] %></h4>
           <h4>뜻: <%= posts[i].meaning[2] %></h4>
           <p></p>
           <p><%= posts[i].dateToString %></p>
