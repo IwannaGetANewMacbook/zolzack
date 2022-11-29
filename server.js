@@ -7,9 +7,12 @@ const localStrategy = require("passport-local").Strategy
 const session = require("express-session")
 require("dotenv").config()
 const bson = require("bson")
-// const { Temporal, Intl, toTemporalInstant } = require('@js-temporal/polyfill');
-// Date.prototype.toTemporalInstant = toTemporalInstant;
-// console.log(Temporal.Now.zonedDateTimeISO('Asia/Seoul').toString())
+
+// soket.io 세팅
+const http = require("http").createServer(app)
+const { Server } = require("socket.io")
+const io = new Server(http)
+
 
 // ejs 라이브러리및 미들웨어 등록.
 app.set("view engine", "ejs")
@@ -58,7 +61,7 @@ MongoClient.connect(process.env.DB_URL, (e, client) => {
   }
   db = client.db("zolzack") //todoapp 이라는 database(폴더)에 연결좀요
 
-  app.listen(process.env.PORT, () => {
+  http.listen(process.env.PORT, () => {
     console.log("listening on 8080")
   })
 })
@@ -237,4 +240,21 @@ app.delete("/delete", (req, res, next) => {
       res.status(200).send({ message: "completed!" })
     }
   })
+})
+
+app.get("/chat", (req, res, next) => {
+  res.render("chat.ejs")
+})
+
+// WebSocket 접속시 서버가 무언가를 실행하기 위한 코드.
+io.on("connection", (socket) => {
+  console.log("User Connected")
+  // 서버에서 클라이언트가 보낸 메시지를 수신하기 위함.
+  socket.on("user-send", (data) => {  // 누가 'user-send'이름으로 데이터를 보내면 내부 코드 실행시켜주셈.
+    // 서버 -> 유저 메시지 전송
+    io.emit("broadcast", data)
+    console.log(data)
+  }) 
+
+
 })
