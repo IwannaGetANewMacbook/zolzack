@@ -21,9 +21,11 @@
     </pre>
     
     <div>채팅방</div>
-    <input type="text" id="input1">
+    <!-- <input type="text" id="input1"> -->
+    <input type="text" class="form-control" id="input1">
     <div id="content"></div>
-    <button id="send">서버에 메시지 보내기</button>
+    <!-- <button id="send">서버에 메시지 보내기</button> -->
+    <button type="submit" class="btn btn-outline-secondary" id="send">전송</button>
 
     <script>
       let socket = io() // 웹소켓 접속하기 위한 코드.
