@@ -16,26 +16,40 @@
     <!-- nav.html을 첨부. -->
     <%- include("nav.html") %>
     <pre>
-      <h1 class="text-center">영단어 작문</h1>
-      <h6 class="text-center">정보통신공학과 김수현 졸업작품</h6>
+      <h1 class="text-center">영작문 채팅</h1>
+      <h6 class="text-center">유저들과 자유롭게 영어로 소통해 보아요😉</h6>
     </pre>
-    
-    <div>채팅방</div>
-    <!-- <input type="text" id="input1"> -->
+
+    <div class="container mt-4">
     <input type="text" class="form-control" id="input1">
-    <div id="content"></div>
-    <!-- <button id="send">서버에 메시지 보내기</button> -->
+    <input type="hidden" class="form-control" id="input2" value=" <%= username%>" disabled>
+    
     <button type="submit" class="btn btn-outline-secondary" id="send">전송</button>
+    <div id="content"></div>
+    </div>
+    <pre>
+
+    </pre>
+    <h6 class="text-center">이전대화</h6>
+    <div class="container mt-4">  
+      <ul class="list-group">
+        <% for (let i = 0; i < data.length; i++) { %>
+          <br><li><span class='chat-box'><%= data[i].message %></sapn></li><%= data[i].dateToString %>
+        <% } %>
+      </ul>
+    </div>
+
+
 
     <script>
-      let socket = io() // 웹소켓 접속하기 위한 코드.
+      let socket = io() // 유저가 웹소켓 접속하기 위한 코드.
       // 서버한테 메시지 전송하기
       $("#send").click(()=> {
-        socket.emit("user-send", $("#input1").val()) // socket.emit(어떤 이름으로 전송할지, 메시지)
+        socket.emit("user-send", $("#input2").val() + ": " + $("#input1").val()) // socket.emit(어떤 이름으로 전송할지, 메시지)
       })
       
       socket.on("broadcast", (data) => {
-        $("#content").append("<div>" + data + "</div>")
+        $("#content").append("<br><li><span class='chat-box'>" + data + "</sapn></li>" + "<%= dateToString%>")
       })
     </script>
     

@@ -29,3 +29,8 @@ label {
 body {
   font-family: "나눔바른고딕";
 }
+.chat-box {
+  background: #eee;
+  padding: 5px;
+  border-radius: 5px;
+}

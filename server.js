@@ -242,19 +242,27 @@ app.delete("/delete", (req, res, next) => {
   })
 })
 
-app.get("/chat", (req, res, next) => {
-  res.render("chat.ejs")
+app.get("/chat", isLogin, (req, res, next) => {
+  db.collection("chat").find({}).sort({ _id: -1 }).toArray((error, result) => {
+    let date = new Date()
+    let dateToString = `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`
+    res.render("chat.ejs", { username: req.user.username, data: result, dateToString: dateToString })
+  })
 })
 
 // WebSocket 접속시 서버가 무언가를 실행하기 위한 코드.
 io.on("connection", (socket) => {
   console.log("User Connected")
+
   // 서버에서 클라이언트가 보낸 메시지를 수신하기 위함.
   socket.on("user-send", (data) => {  // 누가 'user-send'이름으로 데이터를 보내면 내부 코드 실행시켜주셈.
     // 서버 -> 유저 메시지 전송
     io.emit("broadcast", data)
-    console.log(data)
+    let date = new Date()
+    let dateToString = `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`
+    db.collection("chat").insertOne({
+      message: data,
+      dateToString: dateToString
+    })
   }) 
-
-
 })
