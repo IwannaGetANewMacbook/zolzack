@@ -21,7 +21,7 @@
     </pre>
 
     <div class="container mt-4">
-    <input type="text" class="form-control" id="input1">
+    <input type="text" class="form-control" id="input1" onkeyup="chkCharCode(event)" />
     <input type="hidden" class="form-control" id="input2" value=" <%= username%>" disabled>
     
     <button type="submit" class="btn btn-outline-secondary" id="send">전송</button>
@@ -42,6 +42,15 @@
 
 
     <script>
+      // 한글 입력을 막기위한 함수.
+      function chkCharCode(event) {
+      const regExp = /[^0-9a-zA-Z]/g;
+      const ele = event.target;
+      if (regExp.test(ele.value)) {
+        ele.value = ele.value.replace(regExp, '');
+      }
+      };
+
       let socket = io() // 유저가 웹소켓 접속하기 위한 코드.
       // 서버한테 메시지 전송하기
       $("#send").click(()=> {

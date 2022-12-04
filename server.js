@@ -245,7 +245,7 @@ app.delete("/delete", (req, res, next) => {
 app.get("/chat", isLogin, (req, res, next) => {
   db.collection("chat").find({}).sort({ _id: -1 }).toArray((error, result) => {
     let date = new Date()
-    let dateToString = `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`
+    let dateToString = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
     res.render("chat.ejs", { username: req.user.username, data: result, dateToString: dateToString })
   })
 })
@@ -259,7 +259,7 @@ io.on("connection", (socket) => {
     // 서버 -> 유저 메시지 전송
     io.emit("broadcast", data)
     let date = new Date()
-    let dateToString = `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`
+    let dateToString = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
     db.collection("chat").insertOne({
       message: data,
       dateToString: dateToString
