@@ -26,6 +26,46 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.urlencoded({ extended: true }))
 
+// // 현재 시간정보를 리턴해주는 함수
+// function getCurrentDate(){
+//   var date = new Date();
+//   var year = date.getFullYear();
+//   var month = date.getMonth();
+//   var today = date.getDate();
+//   var hours = date.getHours();
+//   var minutes = date.getMinutes();
+//   var seconds = date.getSeconds();
+//   var milliseconds = date.getMilliseconds();
+//   return new Date(Date.UTC(year, month, today, hours, minutes, seconds, milliseconds));
+// }
+
+
+// // 오늘 자정을 리턴해주는 함수
+// function getYesterdayMidnight(){
+//   var date = new Date();
+//   var year = date.getFullYear();
+//   var month = date.getMonth();
+//   var today = date.getDate();
+//   var hours = date.getHours();
+//   var minutes = date.getMinutes();
+//   var seconds = date.getSeconds();
+//   var milliseconds = date.getMilliseconds();
+//   return new Date(Date.UTC(year, month, today));
+// }
+
+// DB접속이 완료되면 8080포트로 서버 연결시키삼!
+MongoClient.connect(process.env.DB_URL, (e, client) => {
+  // 예외 처리
+  if(e) {
+    return console.log(e)
+  }
+  db = client.db("zolzack") //todoapp 이라는 database(폴더)에 연결좀요
+
+  http.listen(process.env.PORT, () => {
+    console.log("listening on 8080")
+  })
+})
+
 // 현재 시간정보를 리턴해주는 함수
 function getCurrentDate(){
   var date = new Date();
@@ -53,18 +93,7 @@ function getYesterdayMidnight(){
   return new Date(Date.UTC(year, month, today));
 }
 
-// DB접속이 완료되면 8080포트로 서버 연결시키삼!
-MongoClient.connect(process.env.DB_URL, (e, client) => {
-  // 예외 처리
-  if(e) {
-    return console.log(e)
-  }
-  db = client.db("zolzack") //todoapp 이라는 database(폴더)에 연결좀요
 
-  http.listen(process.env.PORT, () => {
-    console.log("listening on 8080")
-  })
-})
 
 
 
@@ -156,11 +185,13 @@ app.get("/login", (req, res, next) => {
 
 
 app.post("/add", (req, res, next) => {
+  
   let date = new Date()
   let dateToString = `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`
   db.collection("post").insertOne({ 
     world: [req.body.world1, req.body.world2, req.body.world3], 
     meaning: [req.body.meaning1, req.body.meaning2, req.body.meaning3],
+    // date: getCurrentDate(),
     date: getCurrentDate(),
     dateToString: dateToString,
     username: req.user.username
@@ -187,7 +218,7 @@ app.post("/login", passport.authenticate("local", {
 // 로그인 실패시 redirect 되는 /fail 경로 만들기
 app.get("/fail", (req, res, next) => {
   console.log("401-Unauthorized")
-  res.status(401).send("401-Unauthorized")
+  res.send("<script>alert('아이디 혹은 비빌번호가 잘못되었습니다.\\n다시 로그인해 주십시오.');location.href='/login';</script>");
 })
 
 
