@@ -17,8 +17,22 @@
     <%- include("nav.html") %>
     <pre>
       <h1 class="text-center">영작문 채팅</h1>
-      <h6 class="text-center">유저들과 자유롭게 영어로 소통해 보아요😉</h6>
+      <h6 class="text-center">오늘배운 단어를 활용하여 유저들과 자유롭게 영어로 소통해 보아요😉</h6>
     </pre>
+    <div class="container mt-4">  
+      <ul class="list-group">
+        <% for (let i = 0; i < posts.length; i++) { %>
+        <li class="list-group-item">
+          <p><%= posts[i].username %>님의 단어</p>
+          <h4><%= posts[i].world[0] %>, <%= posts[i].world[1] %>, <%= posts[i].world[2] %></h4>
+          <p></p>
+          <!-- <p>User Name: <%= posts[i].date %></p> -->
+          <!-- <button class="btn btn-outline-danger delete" data-id="<%= posts[i]._id %>">Delete</button>
+          <button class="btn btn-outline-success" data-id="<%= posts[i]._id %>" onclick="location.href='/edit/<%= posts[i]._id %>'">Modify</button> -->
+        </li>
+        <% } %>
+      </ul>
+    </div>   
 
     <div class="container mt-4">
     <input type="text" class="form-control" id="input1" onkeyup="chkCharCode(event)" />
@@ -30,7 +44,7 @@
     <pre>
 
     </pre>
-    <h6 class="text-center">이전대화</h6>
+    <h6 class="text-center">지난대화</h6>
     <div class="container mt-4">  
       <ul class="list-group">
         <% for (let i = 0; i < data.length; i++) { %>
@@ -44,7 +58,7 @@
     <script>
       // 한글 입력을 막기위한 함수.
       function chkCharCode(event) {
-      const regExp = /[^0-9a-zA-Z]/g;
+      const regExp = /[^a-zA-Z0-9 ]*$/g;
       const ele = event.target;
       if (regExp.test(ele.value)) {
         ele.value = ele.value.replace(regExp, '');

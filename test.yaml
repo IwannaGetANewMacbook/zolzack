@@ -1,0 +1,14 @@
+config:
+  target: "http://zolzack-env.eba-wqr3tx74.ap-northeast-2.elasticbeanstalk.com/"
+  phases:
+    - duration: 10      # 성능 측정 시간
+      arrivalRate: 50   # 매 초 새로운 가상유저를 만드는 수
+
+scenarios:
+  - name: "Emit an event"
+    engine: socketio
+    flow:
+      - emit:
+          channel: "echo"
+          data: "Socket testing"
+      - think: 2  # 가상유저가 2초간 커넥션을 유지하고 끊음.

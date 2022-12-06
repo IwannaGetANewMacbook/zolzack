@@ -274,10 +274,12 @@ app.delete("/delete", (req, res, next) => {
 })
 
 app.get("/chat", isLogin, (req, res, next) => {
-  db.collection("chat").find({}).sort({ _id: -1 }).toArray((error, result) => {
-    let date = new Date()
-    let dateToString = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
-    res.render("chat.ejs", { username: req.user.username, data: result, dateToString: dateToString })
+  db.collection("post").find({ date: { $gte: getYesterdayMidnight() }}).sort({ date: -1 }).toArray((error, result1) => {
+    db.collection("chat").find({}).sort({ _id: -1 }).toArray((error, result) => {
+      let date = new Date()
+      let dateToString = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
+      res.render("chat.ejs", { username: req.user.username, data: result, dateToString: dateToString, posts: result1 })
+    })
   })
 })
 
