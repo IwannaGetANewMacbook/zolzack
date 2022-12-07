@@ -35,7 +35,7 @@
     </div>   
 
     <div class="container mt-4">
-    <input type="text" class="form-control" id="input1" onkeyup="chkCharCode(event)" />
+    <input type="text" class="form-control" id="input1" onclick="test()" onkeyup="chkCharCode(event)" />
     <input type="hidden" class="form-control" id="input2" value=" <%= username%>" disabled>
     
     <button type="submit" class="btn btn-outline-secondary" id="send">전송</button>
@@ -58,12 +58,16 @@
     <script>
       // 한글 입력을 막기위한 함수.
       function chkCharCode(event) {
-      const regExp = /[^a-zA-Z0-9 ]*$/g;
+      const regExp = /[^A-Za-z0-9_\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\\\{\}\[\]\'\"\;\:\<\,\>\.\?\/\s]/gm;
       const ele = event.target;
       if (regExp.test(ele.value)) {
         ele.value = ele.value.replace(regExp, '');
       }
       };
+
+      function test() {
+        $('#input1').val('');
+      }
 
       let socket = io() // 유저가 웹소켓 접속하기 위한 코드.
       // 서버한테 메시지 전송하기
